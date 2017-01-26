@@ -16,13 +16,8 @@ import matplotlib.pyplot as plt
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
-import labnanofisica.utils as utils
-import labnanofisica.ringfinder.tools as tools
-
-
-def insertFolder(p, folder):
-    splitted = os.path.split(p)
-    return os.path.join(splitted[0], folder, splitted[1])
+import ringfinder.utils as utils
+import ringfinder.tools as tools
 
 
 class Gollum(QtGui.QMainWindow):
@@ -197,7 +192,7 @@ class Gollum(QtGui.QMainWindow):
         self.corrButton.clicked.connect(self.ringFinder)
 
         # Load sample STED image
-        folder = os.path.join(os.getcwd(), 'labnanofisica', 'ringfinder')
+        folder = os.path.join(os.getcwd(), 'ringfinder')
         if os.path.exists(folder):
             self.folder = folder
             self.loadSTED(os.path.join(folder, 'spectrinSTED.tif'))
@@ -432,7 +427,7 @@ class Gollum(QtGui.QMainWindow):
             resultsDir = os.path.join(path, 'results')
             if not os.path.exists(resultsDir):
                 os.makedirs(resultsDir)
-            resultsNames = [insertFolder(p, 'results') for p in filenames]
+            resNames = [utils.insertFolder(p, 'results') for p in filenames]
 
             for i in np.arange(nfiles):
                 print(os.path.split(filenames[i])[1])
@@ -446,7 +441,7 @@ class Gollum(QtGui.QMainWindow):
                         self.crop:bound[1]] = self.localCorrBig
 
                 # Save correlation values array
-                corrName = utils.insertSuffix(resultsNames[i], '_correlation')
+                corrName = utils.insertSuffix(resNames[i], '_correlation')
                 tiff.imsave(corrName, corrExp[i], software='Gollum',
                             imagej=True,
                             resolution=(1000/self.pxSize, 1000/self.pxSize),
@@ -457,7 +452,7 @@ class Gollum(QtGui.QMainWindow):
             ringsExp[corrExp >= self.corrThres] = 1
             for i in np.arange(nfiles):
                 # Save correlation values array
-                ringName = utils.insertSuffix(resultsNames[i], '_rings')
+                ringName = utils.insertSuffix(resNames[i], '_rings')
                 tiff.imsave(ringName, ringsExp[i], software='Gollum',
                             imagej=True,
                             resolution=(1000/self.pxSize, 1000/self.pxSize),

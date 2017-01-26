@@ -44,5 +44,4 @@ def analysisApp():
 
     win = analysis.AnalysisWidget()
     win.show()
-
     app.exec_()

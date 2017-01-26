@@ -19,7 +19,7 @@ from skimage.transform import probabilistic_hough_line
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
 
-from labnanofisica.ringfinder.neurosimulations import simAxon
+from ringfinder.neurosimulations import simAxon
 
 
 def saveConfig(main, filename=None):

@@ -9,7 +9,6 @@ Created on Fri Jul 15 12:25:40 2016
 
 import os
 import time
-import math
 import numpy as np
 from scipy import ndimage as ndi
 import tifffile as tiff
@@ -18,8 +17,8 @@ import matplotlib.pyplot as plt
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
-import labnanofisica.utils as utils
-import labnanofisica.ringfinder.tools as tools
+import ringfinder.utils as utils
+import ringfinder.tools as tools
 
 
 class Gollum(QtGui.QMainWindow):

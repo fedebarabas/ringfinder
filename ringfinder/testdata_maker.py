@@ -10,8 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tifffile as tiff
 
-import labnanofisica.utils as utils
-import labnanofisica.ringfinder.tools as tools
+import ringfinder.utils as utils
+import ringfinder.tools as tools
 
 
 def loadData(folder, ax, subimgPxSize, technique, mag=None):

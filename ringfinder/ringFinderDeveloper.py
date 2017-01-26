@@ -12,9 +12,9 @@ from PIL import Image
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
-import labnanofisica.utils as utils
-from labnanofisica.ringfinder.neurosimulations import simAxon
-import labnanofisica.ringfinder.tools as tools
+import ringfinder.utils as utils
+from ringfinder.neurosimulations import simAxon
+import ringfinder.tools as tools
 
 
 class GollumDeveloper(QtGui.QMainWindow):
@@ -223,7 +223,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         self.roi.setOpacity(0.5)
 
         # Load sample STED image
-        folder = os.path.join(os.getcwd(), 'labnanofisica', 'ringfinder')
+        folder = os.path.join(os.getcwd(), 'ringfinder')
         if os.path.exists(folder):
             self.folder = folder
             self.loadSTED(os.path.join(folder, 'spectrinSTED.tif'))
