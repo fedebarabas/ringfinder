@@ -7,7 +7,6 @@ Created on Tue Jul 12 10:51:00 2016
 """
 
 import numpy as np
-# import matplotlib.pyplot as plt
 
 
 class sin2D:
