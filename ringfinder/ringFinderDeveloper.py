@@ -472,7 +472,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
             thr = np.float(self.main.intThresEdit.text())
             threshold = self.meanS + thr*self.stdS
             neuronTh = [np.any(b > threshold) for b in blocksInputS]
-            neuronFrac = [1 - np.sum(m)/np.size(m) > 0.25 for m in blocksMask]
+            neuronFrac = [1 - np.sum(m)/np.size(m) > 0.2 for m in blocksMask]
 
             neuron = np.array(neuronTh) * np.array(neuronFrac)
 

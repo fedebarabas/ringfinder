@@ -350,7 +350,7 @@ class Gollum(QtGui.QMainWindow):
                 # don't catch tiny bright spots outside neurons
                 neuronFrac = 1 - np.sum(mask)/np.size(mask)
                 thres = self.meanS + intThr*self.stdS
-                if np.any(blockS > thres) and neuronFrac > 0.25:
+                if np.any(blockS > thres) and neuronFrac > 0.2:
                     output = tools.corrMethod(block, mask, *cArgs)
                     angle, corrTheta, corrMax, theta, phase = output
                     # Store results
