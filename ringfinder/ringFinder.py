@@ -473,16 +473,27 @@ class Gollum(QtGui.QMainWindow):
             validArr = np.repeat(np.arange(nfiles), np.prod(self.n))
             validArr = validArr[~np.isnan(corrArrayFlat)]
             valuesTxt = os.path.join(resultsDir, folder + 'corr_values.txt')
-            np.savetxt(valuesTxt, np.stack((validCorr, validArr), 1),
-                       fmt='%f\t%i')
+            corrByN = np.stack((validCorr, validArr), 1)
+            np.savetxt(valuesTxt, corrByN, fmt='%f\t%i')
+
+            sqn = np.sqrt(nfiles)
+            groupedCorr = [validCorr[np.where(validArr == i)]
+                           for i in np.arange(nfiles)]
+            meanCorrs = [np.mean(d) for d in groupedCorr]
+
+            validCorrRing = validCorr[np.where(validCorr > self.corrThres)]
+            validArrRing = validArr[np.where(validCorr > self.corrThres)]
+            groupedCorrRing = [validCorrRing[np.where(validArrRing == i)]
+                               for i in np.arange(nfiles)]
+            ringFracs = [len(groupedCorrRing[i])/len(groupedCorr[i])
+                         for i in np.arange(nfiles)]
+            meanRingCorrs = [np.mean(d) for d in groupedCorrRing]
 
             # Plotting
             plt.figure(0)
-            ringData = validCorr[validCorr > self.corrThres]
             n = corrArray.size - np.count_nonzero(np.isnan(corrArray))
             nring = np.sum(validCorr > self.corrThres)
-            ringFrac = nring / n
-            ringStd = math.sqrt(ringFrac*(1 - ringFrac)/n)
+
             plt.bar(x, y, align='center', width=(x[1] - x[0]))
             plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), 'r--',
                      linewidth=2)
@@ -491,9 +502,10 @@ class Gollum(QtGui.QMainWindow):
                     'ringFrac = {3:.3f} +- {4:.3f} \n'
                     'mean correlation = {5:.4f} +- {6:.4f}\n'
                     'mean ring correlation = {7:.4f} +- {8:.4f}')
-            text = text.format(self.corrThres, n, nring, ringFrac, ringStd,
-                               np.mean(validCorr), np.std(validCorr),
-                               np.mean(ringData), np.std(ringData))
+            text = text.format(self.corrThres, n, nring, np.mean(ringFracs),
+                               np.std(ringFracs)/sqn, np.mean(meanCorrs),
+                               np.std(meanCorrs)/sqn, np.mean(meanRingCorrs),
+                               np.std(meanRingCorrs)/sqn)
             plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
                      bbox=dict(facecolor='white'))
