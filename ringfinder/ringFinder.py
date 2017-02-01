@@ -476,7 +476,7 @@ class Gollum(QtGui.QMainWindow):
             corrByN = np.stack((validCorr, validArr), 1)
             np.savetxt(valuesTxt, corrByN, fmt='%f\t%i')
 
-            sqn = np.sqrt(nfiles)
+            sqn = math.sqrt(nfiles)
             groupedCorr = [validCorr[np.where(validArr == i)]
                            for i in np.arange(nfiles)]
             meanCorrs = [np.mean(d) for d in groupedCorr]
@@ -487,7 +487,9 @@ class Gollum(QtGui.QMainWindow):
                                for i in np.arange(nfiles)]
             ringFracs = [len(groupedCorrRing[i])/len(groupedCorr[i])
                          for i in np.arange(nfiles)]
-            meanRingCorrs = [np.mean(d) for d in groupedCorrRing]
+            meanRingCorrs = np.array([np.mean(d) for d in groupedCorrRing])
+            meanRingCorrs = meanRingCorrs[~np.isnan(meanRingCorrs)]
+            sqnR = math.sqrt(len(meanRingCorrs))
 
             # Plotting
             plt.figure(0)
@@ -505,7 +507,7 @@ class Gollum(QtGui.QMainWindow):
             text = text.format(self.corrThres, n, nring, np.mean(ringFracs),
                                np.std(ringFracs)/sqn, np.mean(meanCorrs),
                                np.std(meanCorrs)/sqn, np.mean(meanRingCorrs),
-                               np.std(meanRingCorrs)/sqn)
+                               np.std(meanRingCorrs)/sqnR)
             plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
                      bbox=dict(facecolor='white'))
