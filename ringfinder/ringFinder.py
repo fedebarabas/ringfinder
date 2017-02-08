@@ -530,7 +530,7 @@ class Gollum(QtGui.QMainWindow):
             plt.title("Correlations Histogram")
             plt.xlabel("Value")
             plt.ylabel("Frequency")
-            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist'))
+            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'))
             plt.close()
 
             folder = os.path.split(path)[1]
