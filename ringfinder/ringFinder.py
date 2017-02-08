@@ -236,9 +236,9 @@ class Gollum(QtGui.QMainWindow):
         try:
 
             if not(isinstance(filename, str)):
+                filetypes = ('Tiff file', '*.tif;*.tiff')
                 self.filename = utils.getFilename('Load ' + tt + ' image',
-                                                  [('Tiff file', '.tif')],
-                                                  self.folder)
+                                                  [filetypes], self.folder)
             else:
                 self.filename = filename
 
@@ -262,6 +262,17 @@ class Gollum(QtGui.QMainWindow):
                 self.inputData = self.inputData[self.crop:bound[0],
                                                 self.crop:bound[1]]
                 self.shape = self.inputData.shape
+
+                # We need 1um n-sized subimages
+                self.subimgPxSize = int(1000/self.pxSize)
+                self.n = (np.array(self.shape)/self.subimgPxSize).astype(int)
+
+                # If n*subimgPxSize < shape, we crop the image
+                self.remanent = np.array(self.shape) - self.n*self.subimgPxSize
+                self.inputData = self.inputData[:self.n[0]*self.subimgPxSize,
+                                                :self.n[1]*self.subimgPxSize]
+                self.shape = self.inputData.shape
+
                 self.updateImage()
                 self.corrVb.addItem(self.corrImgItem)
                 self.ringVb.addItem(self.ringImgItem)
@@ -269,9 +280,6 @@ class Gollum(QtGui.QMainWindow):
                 self.corrImgItem.setImage(showIm)
                 self.ringImgItem.setImage(showIm)
 
-                # We need 1um n-sized subimages
-                self.subimgPxSize = 1000/self.pxSize
-                self.n = (np.array(self.shape)/self.subimgPxSize).astype(int)
                 self.grid = tools.Grid(self.corrVb, self.shape, self.n)
 
                 self.corrVb.setLimits(xMin=-0.05*self.shape[0],
@@ -403,7 +411,7 @@ class Gollum(QtGui.QMainWindow):
     def batch(self, function, tech):
         try:
             filenames = utils.getFilenames('Load ' + tech + ' images',
-                                           [('Tiff file', '.tif')],
+                                           [('Tiff file', '*.tif;*.tiff')],
                                            self.folder)
             nfiles = len(filenames)
             function(filenames[0])
@@ -437,8 +445,9 @@ class Gollum(QtGui.QMainWindow):
                 corrArray[i] = self.localCorr
 
                 bound = (np.array(self.initShape) - self.crop).astype(np.int)
-                corrExp[i, self.crop:bound[0],
-                        self.crop:bound[1]] = self.localCorrBig
+                edge = bound - self.remanent
+                corrExp[i, self.crop:edge[0],
+                        self.crop:edge[1]] = self.localCorrBig
 
                 # Save correlation values array
                 corrName = utils.insertSuffix(resNames[i], '_correlation')
@@ -517,9 +526,6 @@ class Gollum(QtGui.QMainWindow):
                     'ringFrac = {3:.3f} +- {4:.3f} \n'
                     'mean correlation = {5:.4f} +- {6:.4f}\n'
                     'mean ring correlation = {7:.4f} +- {8:.4f}')
-            print(np.mean(ringFracs), ringFrac)
-            print(np.mean(meanCorrs), np.mean(validCorr))
-            print(np.mean(meanRingCorrs), np.mean(validRingCorr))
             text = text.format(self.corrThres, n, nring,
                                np.mean(ringFracs), fracStd,
                                np.mean(meanCorrs), corrStd,

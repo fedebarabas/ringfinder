@@ -264,9 +264,9 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         try:
 
             if not(isinstance(filename, str)):
+                filetypes = ('Tiff file', '*.tif;*.tiff')
                 self.filename = utils.getFilename('Load ' + tech + ' image',
-                                                  [('Tiff file', '.tif')],
-                                                  self.folder)
+                                                  [filetypes], self.folder)
             else:
                 self.filename = filename
 
@@ -284,6 +284,16 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                                                 crop:self.shape[1] - crop]
                 self.shape = self.inputData.shape
 
+                # We need 1um n-sized subimages
+                self.subimgPxSize = int(1000/self.pxSize)
+                self.n = (np.array(self.shape)/self.subimgPxSize).astype(int)
+
+                # If n*subimgPxSize < shape, we crop the image
+                self.remanent = np.array(self.shape) - self.n*self.subimgPxSize
+                self.inputData = self.inputData[:self.n[0]*self.subimgPxSize,
+                                                :self.n[1]*self.subimgPxSize]
+                self.shape = self.inputData.shape
+
                 self.showIm = np.fliplr(np.transpose(self.inputData))
 
                 # Image plotting
@@ -299,10 +309,6 @@ class ImageWidget(pg.GraphicsLayoutWidget):
 
                 self.updateImage()
 
-                # We need n 1um-sized subimages
-                self.subimgPxSize = float(self.main.roiSizeEdit.text())
-                self.subimgPxSize /= self.pxSize
-                self.n = (np.array(self.shape)/self.subimgPxSize).astype(int)
                 self.grid = tools.Grid(self.inputVb, self.shape, self.n)
 
                 self.inputVb.setLimits(xMin=-0.05*self.shape[0],
