@@ -487,6 +487,8 @@ class Gollum(QtGui.QMainWindow):
 
             groupedCorr = [validCorr[np.where(validArr == i)]
                            for i in np.arange(nfiles)]
+            groupedCorr = [x for x in groupedCorr if len(x) > 0]
+            nfiles = len(groupedCorr)
             meanCorrs = [np.mean(d) for d in groupedCorr]
 
             validCorrRing = validCorr[np.where(validCorr > self.corrThres)]
