@@ -537,7 +537,7 @@ class Grid:
         self.n = n
         self.lines = []
 
-        pen = pg.mkPen(color=(255, 255, 0), width=1, style=QtCore.Qt.DotLine,
+        pen = pg.mkPen(color=(255, 255, 255), width=1, style=QtCore.Qt.DotLine,
                        antialias=True)
         self.rect = QtGui.QGraphicsRectItem(0, 0, shape[0], shape[1])
         self.rect.setPen(pen)

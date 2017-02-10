@@ -34,15 +34,18 @@ def loadData(folder, ax, subimgPxSize, technique, mag=None):
         inputData = inputData[crop:bound[0], crop:bound[1]]
         dataShape = inputData.shape
 
-    n = (np.array(dataShape)/subimgPxSize).astype(int)
+    n = np.round(np.array(dataShape)/subimgPxSize).astype(int)
 
+    # If n*subimgPxSize < shape, we crop the image
+    inputData = inputData[:n[0]*subimgPxSize, :n[1]*subimgPxSize]
+    dataShape = inputData.shape
     plotWithGrid(inputData, ax, subimgPxSize)
 
     # Segment image in blocks
     nblocks = np.array(dataShape)/n
     blocks = tools.blockshaped(inputData, *nblocks)
 
-    return newFolder, blocks, dataShape, fileShape
+    return newFolder, blocks, dataShape, fileShape, n
 
 
 def selectBlocks(needRings, needNoRings):
@@ -50,17 +53,24 @@ def selectBlocks(needRings, needNoRings):
     text = 'We need {} rings and {} no rings blocks'
     print(text.format(needRings, needNoRings))
 
-    listRings = input("Select nice ring blocks (i.e. 1-3-11-20) ")
-    try:
-        listRings = [int(s) for s in listRings.split('-')]
-    except ValueError:
+    if needRings > 0:
+        listRings = input("Select nice ring blocks (i.e. 1-3-11-20) ")
+        try:
+            listRings = [int(s) for s in listRings.split('-')]
+        except ValueError:
+            listRings = []
+    else:
         listRings = []
 
-    listNoRings = input("Select non-ring (but still neuron) blocks "
-                        "(i.e. 2-7-14-24) ")
-    try:
-        listNoRings = [int(s) for s in listNoRings.split('-')]
-    except ValueError:
+    if needNoRings > 0:
+        listNoRings = input("Select non-ring (but still neuron) blocks "
+                            "(i.e. 2-7-14-24) ")
+        try:
+            listNoRings = [int(s) for s in listNoRings.split('-')]
+        except ValueError:
+            listNoRings = []
+
+    else:
         listNoRings = []
 
     return listRings, listNoRings
@@ -107,7 +117,7 @@ def buildData(technique=None, pxSize=None, mag=None):
             print('Invalid answer')
 
     pxSize = float(input('Enter px size in nm '))
-    subimgPxSize = 1000/pxSize
+    subimgPxSize = int(np.round(1000/pxSize))
     folder = os.getcwd()
     nRings = 0
     nNoRings = 0
@@ -116,7 +126,7 @@ def buildData(technique=None, pxSize=None, mag=None):
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 16, forward=True)
         loadOutput = loadData(os.getcwd(), ax, subimgPxSize, technique, mag)
-        folder, blocks, dataShape, fileShape = loadOutput
+        folder, blocks, dataShape, fileShape, n = loadOutput
         plt.show(block=False)
 
         # this array will be the output
@@ -134,7 +144,12 @@ def buildData(technique=None, pxSize=None, mag=None):
         nNoRings += lNR
 
         plt.close()
-        keepWorking = input('Keep working? [y/n] ') == 'y'
+
+        ans = ''
+        while ans not in ['y', 'n']:
+            ans = input('Keep working? [y/n] ')
+
+        keepWorking = ans == 'y'
 
     except OSError:
         keepWorking = False
@@ -147,8 +162,13 @@ def buildData(technique=None, pxSize=None, mag=None):
             folder, blocks, dd, ee = loadData(folder, ax, subimgPxSize,
                                               technique, mag)
             plt.show(block=False)
-            listRings, listNoRings = selectBlocks(maxRings - nRings,
-                                                  maxNoRings - nNoRings)
+
+            needRings = maxRings - nRings
+            needNoRings = maxNoRings - nNoRings
+            listRings, listNoRings = selectBlocks(needRings, needNoRings)
+            listRings = listRings[:needRings]
+            listNoRings = listNoRings[:needNoRings]
+
             lR = len(listRings)
             testData[nRings:nRings + lR] = blocks[listRings]
             nRings += lR
@@ -167,9 +187,9 @@ def buildData(technique=None, pxSize=None, mag=None):
 
     if technique == 'STORM':
         crop = int(3*mag)
-        bound = (np.array(fileShape) - crop).astype(np.int)
         newTestData = np.zeros(fileShape, testData.dtype)
-        newTestData[crop:bound[0], crop:bound[1]] = testData
+        newTestData[crop:crop + n[0]*subimgPxSize,
+                    crop:crop + n[1]*subimgPxSize] = testData
         plotWithGrid(testData, ax, subimgPxSize)
         plt.show()
         tiff.imsave('testdata.tif', newTestData)

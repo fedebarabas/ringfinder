@@ -285,7 +285,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                 self.shape = self.inputData.shape
 
                 # We need 1um n-sized subimages
-                self.subimgPxSize = int(1000/self.pxSize)
+                self.subimgPxSize = int(np.round(1000/self.pxSize))
                 self.n = (np.array(self.shape)/self.subimgPxSize).astype(int)
 
                 # If n*subimgPxSize < shape, we crop the image
