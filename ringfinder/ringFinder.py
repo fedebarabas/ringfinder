@@ -18,6 +18,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 
 import ringfinder.utils as utils
 import ringfinder.tools as tools
+import ringfinder.pyqtsubclass as pyqtsub
 
 
 class Gollum(QtGui.QMainWindow):
@@ -280,7 +281,7 @@ class Gollum(QtGui.QMainWindow):
                 self.corrImgItem.setImage(showIm)
                 self.ringImgItem.setImage(showIm)
 
-                self.grid = tools.Grid(self.corrVb, self.shape, self.n)
+                self.grid = pyqtsub.Grid(self.corrVb, self.shape, self.n)
 
                 self.corrVb.setLimits(xMin=-0.05*self.shape[0],
                                       xMax=1.05*self.shape[0], minXRange=4,

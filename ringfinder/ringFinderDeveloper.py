@@ -15,6 +15,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 import ringfinder.utils as utils
 from ringfinder.neurosimulations import simAxon
 import ringfinder.tools as tools
+import ringfinder.pyqtsubclass as pyqtsub
 
 
 class GollumDeveloper(QtGui.QMainWindow):
@@ -217,7 +218,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
 
         # Custom ROI for selecting an image region
         pxSize = np.float(self.main.STEDPxEdit.text())
-        self.roi = tools.SubImgROI(self.main.subImgSize/pxSize)
+        self.roi = pyqtsub.SubImgROI(self.main.subImgSize/pxSize)
         self.inputVb.addItem(self.roi)
         self.roi.setZValue(10)  # make sure ROI is drawn above image
         self.roi.setOpacity(0.5)
@@ -309,7 +310,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
 
                 self.updateImage()
 
-                self.grid = tools.Grid(self.inputVb, self.shape, self.n)
+                self.grid = pyqtsub.Grid(self.inputVb, self.shape, self.n)
 
                 self.inputVb.setLimits(xMin=-0.05*self.shape[0],
                                        xMax=1.05*self.shape[0], minXRange=4,
