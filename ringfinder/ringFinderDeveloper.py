@@ -422,7 +422,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                                             mask=self.selectedMask,
                                             fill_value=0)
                 self.img1.setImage(self.bestAxon.filled(0))
-                self.img2.setImage(self.selected)
+#                self.img2.setImage(self.selected)
 
                 shape = self.selected.shape
                 self.vb4.setLimits(xMin=-0.05*shape[0], xMax=1.05*shape[0],

@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Feb 11 18:51:26 2017
+
+@author: Federico Barabas
+"""
+
+import numpy as np
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
 

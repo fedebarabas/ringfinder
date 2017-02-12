@@ -12,8 +12,9 @@ from tkinter import Tk, filedialog
 def getFilename(title, types, initialdir=None):
     root = Tk()
     root.withdraw()
-    filename = filedialog.askopenfilename(title=title, filetypes=types,
-                                          initialdir=initialdir)
+#    filename = filedialog.askopenfilename(title=title, filetypes=types,
+#                                          initialdir=initialdir)
+    filename = filedialog.askopenfilename(title=title, initialdir=initialdir)
     root.destroy()
     return filename
 
@@ -21,8 +22,9 @@ def getFilename(title, types, initialdir=None):
 def getFilenames(title, types=[], initialdir=None):
     root = Tk()
     root.withdraw()
-    filenames = filedialog.askopenfilenames(title=title, filetypes=types,
-                                            initialdir=initialdir)
+#    filenames = filedialog.askopenfilenames(title=title, filetypes=types,
+#                                            initialdir=initialdir)
+    filenames = filedialog.askopenfilenames(title=title, initialdir=initialdir)
     root.destroy()
     return root.tk.splitlist(filenames)
 

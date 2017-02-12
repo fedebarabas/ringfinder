@@ -12,9 +12,14 @@ import numpy as np
 from scipy import ndimage as ndi
 import tifffile as tiff
 from PIL import Image
-import matplotlib.pyplot as plt
+
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
+
+import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('text', usetex=True)
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
 
 import ringfinder.utils as utils
 import ringfinder.tools as tools
@@ -526,9 +531,9 @@ class Gollum(QtGui.QMainWindow):
                      linewidth=2)
             text = ('correlation threshold = {0:.2f} \n'
                     'n = {1}; nrings = {2} \n'
-                    'ringFrac = {3:.3f} +- {4:.3f} \n'
-                    'mean correlation = {5:.4f} +- {6:.4f}\n'
-                    'mean ring correlation = {7:.4f} +- {8:.4f}')
+                    'ringFrac = {3:.2f} $\pm$ {4:.2f} \n'
+                    'mean correlation = {5:.3f} $\pm$ {6:.3f}\n'
+                    'mean ring correlation = {7:.3f} $\pm$ {8:.3f}')
             text = text.format(self.corrThres, n, nring,
                                np.mean(ringFracs), fracStd,
                                np.mean(meanCorrs), corrStd,
@@ -536,9 +541,10 @@ class Gollum(QtGui.QMainWindow):
             plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
                      bbox=dict(facecolor='white'))
-            plt.title("Correlations Histogram")
-            plt.xlabel("Value")
-            plt.ylabel("Frequency")
+            plt.title("Correlations Histogram", fontsize=22)
+            plt.tick_params(axis='both', labelsize=18)
+            plt.grid()
+            plt.tight_layout()
             plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'))
             plt.close()
 
