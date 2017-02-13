@@ -17,13 +17,15 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 import matplotlib.pyplot as plt
+import matplotlib.colors
 from matplotlib import rc
-rc('text', usetex=True)
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
 
 import ringfinder.utils as utils
 import ringfinder.tools as tools
 import ringfinder.pyqtsubclass as pyqtsub
+
+rc('text', usetex=True)
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
 
 
 class Gollum(QtGui.QMainWindow):
@@ -32,6 +34,7 @@ class Gollum(QtGui.QMainWindow):
         super().__init__(*args, **kwargs)
 
         self.i = 0
+        self.testData = True
 
         self.setWindowTitle('Gollum: the Ring Finder')
 
@@ -121,11 +124,11 @@ class Gollum(QtGui.QMainWindow):
         self.sigmaEdit = QtGui.QLineEdit()
         self.lineLengthEdit = QtGui.QLineEdit()
         self.roiSizeEdit = QtGui.QLineEdit()
-        self.corrThresEdit = QtGui.QLineEdit('0')
         self.corrSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.corrSlider.setMinimum(0)
         self.corrSlider.setMaximum(250)   # Divide by 1000 to get corr value
-        self.corrSlider.setValue(1000*float(self.corrThresEdit.text()))
+        self.corrSlider.setValue(200)
+        self.corrThresEdit = QtGui.QLineEdit('0.2')
         self.corrSlider.valueChanged[int].connect(self.sliderChange)
         self.showCorrMapCheck = QtGui.QCheckBox('Show correlation map', self)
         self.thetaStepEdit = QtGui.QLineEdit()
@@ -194,7 +197,7 @@ class Gollum(QtGui.QMainWindow):
 
         self.loadSTORMButton.clicked.connect(self.loadSTORM)
         self.loadSTEDButton.clicked.connect(self.loadSTED)
-        self.sigmaEdit.textChanged.connect(self.updateImage)
+        self.sigmaEdit.textChanged.connect(self.updateMasks)
         self.corrButton.clicked.connect(self.ringFinder)
 
         # Load sample STED image
@@ -279,7 +282,11 @@ class Gollum(QtGui.QMainWindow):
                                                 :self.n[1]*self.subimgPxSize]
                 self.shape = self.inputData.shape
 
-                self.updateImage()
+                self.nblocks = np.array(self.inputData.shape)/self.n
+                self.blocksInput = tools.blockshaped(self.inputData,
+                                                     *self.nblocks)
+
+                self.updateMasks()
                 self.corrVb.addItem(self.corrImgItem)
                 self.ringVb.addItem(self.ringImgItem)
                 showIm = np.fliplr(np.transpose(self.inputData))
@@ -311,18 +318,38 @@ class Gollum(QtGui.QMainWindow):
         except OSError:
             self.fileStatus.setText('No file selected!')
 
-    def updateImage(self):
+    def updateMasks(self):
+        """Binarization of image. """
+
         self.gaussSigma = np.float(self.sigmaEdit.text())/self.pxSize
-        self.inputDataS = ndi.gaussian_filter(self.inputData,
-                                              self.gaussSigma)
-        self.meanS = np.mean(self.inputDataS)
-        self.stdS = np.std(self.inputDataS)
+        thr = np.float(self.intThresEdit.text())
+
+        if self.testData:
+            self.blocksInputS = [ndi.gaussian_filter(b, self.gaussSigma)
+                                 for b in self.blocksInput]
+            self.blocksInputS = np.array(self.blocksInputS)
+            self.meanS = np.mean(self.blocksInputS, (1, 2))
+            self.stdS = np.std(self.blocksInputS, (1, 2))
+            thresholds = self.meanS + thr*self.stdS
+            thresholds = thresholds.reshape(np.prod(self.n), 1, 1)
+            mask = self.blocksInputS < thresholds
+            self.blocksMask = np.array([bI < np.mean(bI) + thr*np.std(bI)
+                                       for bI in self.blocksInputS])
+
+            self.mask = tools.unblockshaped(mask, *self.inputData.shape)
+            self.inputDataS = tools.unblockshaped(self.blocksInputS,
+                                                  *self.shape)
+        else:
+            self.inputDataS = ndi.gaussian_filter(self.inputData,
+                                                  self.gaussSigma)
+            self.blocksInputS = tools.blockshaped(self.inputDataS,
+                                                  *self.nblocks)
+            self.meanS = np.mean(self.inputDataS)
+            self.stdS = np.std(self.inputDataS)
+            self.mask = self.inputDataS < self.meanS + thr*self.stdS
+            self.blocksMask = tools.blockshaped(self.mask, *self.nblocks)
 
         self.showImS = np.fliplr(np.transpose(self.inputDataS))
-
-        # binarization of image
-        thr = np.float(self.intThresEdit.text())
-        self.mask = self.inputDataS < self.meanS + thr*self.stdS
         self.showMask = np.fliplr(np.transpose(self.mask))
 
     def ringFinder(self, show=True, batch=False):
@@ -335,12 +362,6 @@ class Gollum(QtGui.QMainWindow):
             self.corrResult.clear()
             self.ringResult.clear()
 
-            # shape the data into the subimg that we need for the analysis
-            nblocks = np.array(self.inputData.shape)/self.n
-            blocksInput = tools.blockshaped(self.inputData, *nblocks)
-            blocksInputS = tools.blockshaped(self.inputDataS, *nblocks)
-            blocksMask = tools.blockshaped(self.mask, *nblocks)
-
             # for each subimg, we apply the correlation method for ring finding
             intThr = np.float(self.intThresEdit.text())
             minLen = np.float(self.lineLengthEdit.text())/self.pxSize
@@ -351,20 +372,23 @@ class Gollum(QtGui.QMainWindow):
             cArgs = minLen, thetaStep, deltaTh, wvlen, sinPow
 
             # Single-core code
-            self.localCorr = np.zeros(len(blocksInput))
-            for i in np.arange(len(blocksInput)):
-                block = blocksInput[i]
-                blockS = blocksInputS[i]
-                mask = blocksMask[i]
+            self.localCorr = np.zeros(len(self.blocksInput))
+            thres = self.meanS + intThr*self.stdS
+            if not(self.testData):
+                thres = thres*np.ones(self.blocksInput.shape)
+
+            for i in np.arange(len(self.blocksInput)):
+                block = self.blocksInput[i]
+                blockS = self.blocksInputS[i]
+                mask = self.blocksMask[i]
                 # Block may be excluded from the analysis for two reasons.
                 # Firstly, because the intensity for all its pixels may be
                 # too low. Secondly, because the part of the block that
-                # belongs toa neuron may be below an arbitrary 30% of the
+                # belongs toa neuron may be below an arbitrary 20% of the
                 # block. We apply intensity threshold to smoothed data so we
                 # don't catch tiny bright spots outside neurons
                 neuronFrac = 1 - np.sum(mask)/np.size(mask)
-                thres = self.meanS + intThr*self.stdS
-                if np.any(blockS > thres) and neuronFrac > 0.2:
+                if np.any(blockS > thres[i]) and neuronFrac > 0.2:
                     output = tools.corrMethod(block, mask, *cArgs)
                     angle, corrTheta, corrMax, theta, phase = output
                     # Store results
@@ -405,13 +429,21 @@ class Gollum(QtGui.QMainWindow):
             data = self.localCorr.reshape(*self.n)
             data = np.flipud(data)
             maskedData = np.ma.array(data, mask=np.isnan(data))
-            heatmap = plt.pcolor(maskedData, cmap='inferno')
+
+            mx = np.max(maskedData)
+            mn = np.min(maskedData)
+            mp = (self.corrThres - mn)/(mx - mn)
+            cmap = shiftedColorMap(matplotlib.cm.PuOr, midpoint=mp,
+                                   name='shifted')
+            heatmap = plt.pcolor(maskedData, cmap=cmap)
             for y in range(data.shape[0]):
                 for x in range(data.shape[1]):
-                    plt.text(x + 0.5, y + 0.5, '%.4f' % data[y, x],
+                    plt.text(x + 0.5, y + 0.5, '%.2f' % data[y, x],
                              horizontalalignment='center',
                              verticalalignment='center',)
             plt.colorbar(heatmap)
+            plt.gca().set_xticklabels([])
+            plt.gca().set_yticklabels([])
             plt.show()
 
     def batch(self, function, tech):
@@ -562,6 +594,60 @@ class Gollum(QtGui.QMainWindow):
 
     def batchSTED(self):
         self.batch(self.loadSTED, 'STED')
+
+
+def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
+    '''
+    Function to offset the "center" of a colormap. Useful for
+    data with a negative min and positive max and you want the
+    middle of the colormap's dynamic range to be at zero
+
+    Input
+    -----
+      cmap : The matplotlib colormap to be altered
+      start : Offset from lowest point in the colormap's range.
+          Defaults to 0.0 (no lower ofset). Should be between
+          0.0 and `midpoint`.
+      midpoint : The new center of the colormap. Defaults to
+          0.5 (no shift). Should be between 0.0 and 1.0. In
+          general, this should be  1 - vmax/(vmax + abs(vmin))
+          For example if your data range from -15.0 to +5.0 and
+          you want the center of the colormap at 0.0, `midpoint`
+          should be set to  1 - 5/(5 + 15)) or 0.75
+      stop : Offset from highets point in the colormap's range.
+          Defaults to 1.0 (no upper ofset). Should be between
+          `midpoint` and 1.0.
+    http://stackoverflow.com/questions/7404116/
+    defining-the-midpoint-of-a-colormap-in-matplotlib
+    '''
+    cdict = {
+        'red': [],
+        'green': [],
+        'blue': [],
+        'alpha': []
+    }
+
+    # regular index to compute the colors
+    reg_index = np.linspace(start, stop, 257)
+
+    # shifted index to match the data
+    shift_index = np.hstack([
+        np.linspace(0.0, midpoint, 128, endpoint=False),
+        np.linspace(midpoint, 1.0, 129, endpoint=True)
+    ])
+
+    for ri, si in zip(reg_index, shift_index):
+        r, g, b, a = cmap(ri)
+
+        cdict['red'].append((si, r, r))
+        cdict['green'].append((si, g, g))
+        cdict['blue'].append((si, b, b))
+        cdict['alpha'].append((si, a, a))
+
+    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+    plt.register_cmap(cmap=newcmap)
+
+    return newcmap
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])

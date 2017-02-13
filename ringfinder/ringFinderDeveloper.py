@@ -21,8 +21,9 @@ import ringfinder.pyqtsubclass as pyqtsub
 class GollumDeveloper(QtGui.QMainWindow):
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
+
+        self.testData = True
 
         self.setWindowTitle('Gollum Developer')
 
@@ -74,7 +75,7 @@ class GollumDeveloper(QtGui.QMainWindow):
         self.thetaStepEdit = QtGui.QLineEdit()
         self.deltaThEdit = QtGui.QLineEdit()
         corrThresLabel = QtGui.QLabel('Discrimination threshold')
-        self.corrThresEdit = QtGui.QLineEdit()
+        self.corrThresEdit = QtGui.QLineEdit('0.2')
         corrButton = QtGui.QPushButton('Run analysis')
         self.resultLabel = QtGui.QLabel()
         self.resultLabel.setAlignment(QtCore.Qt.AlignCenter |
@@ -148,8 +149,8 @@ class GollumDeveloper(QtGui.QMainWindow):
         layout.setRowMinimumHeight(0, 825)
 
         self.roiSizeEdit.textChanged.connect(self.imageWidget.updateROI)
-        self.sigmaEdit.textChanged.connect(self.imageWidget.updateImage)
-        self.intThresEdit.textChanged.connect(self.imageWidget.updateImage)
+        self.sigmaEdit.textChanged.connect(self.imageWidget.updateMasks)
+        self.intThresEdit.textChanged.connect(self.imageWidget.updateMasks)
         self.loadSTORMButton.clicked.connect(self.imageWidget.loadSTORM)
         self.loadSTEDButton.clicked.connect(self.imageWidget.loadSTED)
 
@@ -295,6 +296,10 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                                                 :self.n[1]*self.subimgPxSize]
                 self.shape = self.inputData.shape
 
+                self.nblocks = np.array(self.inputData.shape)/self.n
+                self.blocksInput = tools.blockshaped(self.inputData,
+                                                     *self.nblocks)
+
                 self.showIm = np.fliplr(np.transpose(self.inputData))
 
                 # Image plotting
@@ -308,7 +313,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                 self.inputVb.addItem(self.thresBlockIm)
                 self.inputVb.addItem(self.thresIm)
 
-                self.updateImage()
+                self.updateMasks()
 
                 self.grid = pyqtsub.Grid(self.inputVb, self.shape, self.n)
 
@@ -352,20 +357,40 @@ class ImageWidget(pg.GraphicsLayoutWidget):
             self.main.sigmaEdit.setText(prevSigma)
             self.main.intThresEdit.setText(prevThres)
 
-    def updateImage(self):
+    def updateMasks(self):
+        """Binarization of image. """
 
         self.gaussSigma = np.float(self.main.sigmaEdit.text())/self.pxSize
-        self.inputDataS = ndi.gaussian_filter(self.inputData,
-                                              self.gaussSigma)
-        self.meanS = np.mean(self.inputDataS)
-        self.stdS = np.std(self.inputDataS)
+        thr = np.float(self.main.intThresEdit.text())
+
+        if self.main.testData:
+            self.blocksInputS = [ndi.gaussian_filter(b, self.gaussSigma)
+                                 for b in self.blocksInput]
+            self.blocksInputS = np.array(self.blocksInputS)
+            self.meanS = np.mean(self.blocksInputS, (1, 2))
+            self.stdS = np.std(self.blocksInputS, (1, 2))
+            thresholds = self.meanS + thr*self.stdS
+            thresholds = thresholds.reshape(np.prod(self.n), 1, 1)
+            mask = self.blocksInputS < thresholds
+            self.blocksMask = np.array([bI < np.mean(bI) + thr*np.std(bI)
+                                       for bI in self.blocksInputS])
+
+            self.mask = tools.unblockshaped(mask, *self.inputData.shape)
+            self.inputDataS = tools.unblockshaped(self.blocksInputS,
+                                                  *self.shape)
+        else:
+            self.inputDataS = ndi.gaussian_filter(self.inputData,
+                                                  self.gaussSigma)
+            self.blocksInputS = tools.blockshaped(self.inputDataS,
+                                                  *self.nblocks)
+            self.meanS = np.mean(self.inputDataS)
+            self.stdS = np.std(self.inputDataS)
+            self.mask = self.inputDataS < self.meanS + thr*self.stdS
+            self.blocksMask = tools.blockshaped(self.mask, *self.nblocks)
 
         self.showImS = np.fliplr(np.transpose(self.inputDataS))
-
-        # binarization of image
-        thr = np.float(self.main.intThresEdit.text())
-        self.mask = self.inputDataS < self.meanS + thr*self.stdS
         self.showMask = np.fliplr(np.transpose(self.mask))
+
         self.selectedMask = self.roi.getArrayRegion(self.showMask,
                                                     self.inputImg).astype(bool)
 
@@ -374,9 +399,16 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         self.subImgPlot.clear()
 
         self.selected = self.roi.getArrayRegion(self.showIm, self.inputImg)
+        self.selected = self.selected[1:-1, 1:-1]
         self.selectedS = self.roi.getArrayRegion(self.showImS, self.inputImg)
+        self.selectedS = self.selectedS[1:-1, 1:-1]
         self.selectedMask = self.roi.getArrayRegion(self.showMask,
                                                     self.inputImg).astype(bool)
+        self.selectedMask = self.selectedMask[1:-1, 1:-1]
+
+        self.selectedMean = np.mean(self.selectedS)
+        self.selectedStd = np.std(self.selectedS)
+
         shape = self.selected.shape
         self.subImgSize = shape[0]
         self.subImg.setImage(self.selected)
@@ -399,7 +431,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         # We apply intensity threshold to smoothed data so we don't catch
         # tiny bright spots outside neurons
         thr = np.float(self.main.intThresEdit.text())
-        if np.any(self.selectedS > self.meanS + thr*self.stdS):
+        if np.any(self.selectedS > self.selectedMean + thr*self.selectedStd):
 
             self.getDirection()
 
@@ -422,7 +454,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                                             mask=self.selectedMask,
                                             fill_value=0)
                 self.img1.setImage(self.bestAxon.filled(0))
-#                self.img2.setImage(self.selected)
+                self.img2.setImage(self.selected)
 
                 shape = self.selected.shape
                 self.vb4.setLimits(xMin=-0.05*shape[0], xMax=1.05*shape[0],
@@ -464,24 +496,21 @@ class ImageWidget(pg.GraphicsLayoutWidget):
 
         if self.main.intThrButton.isChecked():
 
-            # shape the data into the subimg that we need for the analysis
-            subImgPx = np.array(self.inputData.shape)/self.n
-            self.blocksInput = tools.blockshaped(self.inputData, *subImgPx)
-
-            # We apply intensity threshold to smoothed data so we don't catch
-            # tiny bright spots outside neurons
-            inputDataS = ndi.gaussian_filter(self.inputData, self.gaussSigma)
-            nblocks = np.array(inputDataS.shape)/self.n
-            blocksInputS = tools.blockshaped(inputDataS, *nblocks)
-            blocksMask = tools.blockshaped(self.mask, *nblocks)
-
             neuron = np.zeros(len(self.blocksInput))
             thr = np.float(self.main.intThresEdit.text())
-            threshold = self.meanS + thr*self.stdS
-            neuronTh = [np.any(b > threshold) for b in blocksInputS]
-            neuronFrac = [1 - np.sum(m)/np.size(m) > 0.2 for m in blocksMask]
 
-            neuron = np.array(neuronTh) * np.array(neuronFrac)
+            # Find neurons above background
+            thres = self.meanS + thr*self.stdS
+            if not(self.main.testData):
+                thres = thres*np.ones(self.blocksInput.shape)
+            neuronTh = np.array([np.any(self.blocksInputS[i] > thres[i])
+                                 for i in np.arange(len(self.blocksInputS))])
+
+            # Find sufficintly filled subimages
+            neuronFrac = np.array([1 - np.sum(m)/np.size(m) > 0.2
+                                   for m in self.blocksMask])
+
+            neuron = neuronTh * neuronFrac
 
             # code for visualization of the output
             neuron = neuron.reshape(*self.n)
@@ -506,7 +535,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         minLen = np.float(self.main.lineLengthEdit.text()) / self.pxSize
         self.th0, lines = tools.getDirection(self.selected,
                                              np.invert(self.selectedMask),
-                                             minLen)
+                                             minLen, True)
 
         # Lines plot
         pen = pg.mkPen(color=(0, 255, 100), width=1, style=QtCore.Qt.SolidLine,

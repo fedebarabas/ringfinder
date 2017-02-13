@@ -219,6 +219,7 @@ def getDirection(data, binary, minLen, debug=False):
 
     except:
         # if sigmaTh is None (no lines), this happens
+        print('No lines were found')
         return None, lines
 
 
@@ -354,16 +355,12 @@ def corrMethod(data, mask, minLen, thStep, deltaTh, wvlen, sinPow,
 
     corrPhase = np.zeros(np.size(phase))
 
-    neuronFrac = 1 - np.sum(mask)/np.size(mask)
-
     # line angle calculated
     th0, lines = getDirection(data, np.invert(mask), minLen, developer)
 
     if th0 is None:
 
         theta = np.arange(0, 180, thStep)
-
-        # result = 0 means there's a neuron in the block but no rings are found
         # result = np.nan means there's no neuron in the block
         corrPhaseArg = np.zeros(np.size(theta))
         corrPhaseArg[:] = np.nan
@@ -401,9 +398,7 @@ def corrMethod(data, mask, minLen, thStep, deltaTh, wvlen, sinPow,
                 dataMasked = np.ma.array(data, mask=mask)
 
                 # saves correlation for the given phase p
-                # Unbiasing dependence of corr with area of neuron in block
                 corrPhase[p] = pearson(dataMasked, axonThetaMasked)
-#                corrPhase[p] = pearson(dataMasked, axonThetaMasked)*neuronFrac
 
             # saves the correlation for the best p, and given angle i
             corrTheta[t - 1] = np.max(corrPhase)
@@ -418,9 +413,7 @@ def corrMethod(data, mask, minLen, thStep, deltaTh, wvlen, sinPow,
         phaseMax = corrPhaseArg[ix][i]
         corrMax = np.max(corrTheta[ix])
 
-#        rings = corrMax > thres
-
-    return th0, corrTheta, corrMax, thetaMax, phaseMax  # , rings
+    return th0, corrTheta, corrMax, thetaMax, phaseMax
 
 
 def FFTMethod(data, thres=0.4):

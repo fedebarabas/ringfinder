@@ -159,7 +159,7 @@ def buildData(technique=None, pxSize=None, mag=None):
         try:
             fig, ax = plt.subplots()
             fig.set_size_inches(12, 18, forward=True)
-            folder, blocks, dd, ee = loadData(folder, ax, subimgPxSize,
+            folder, blocks, dd, ee, ff = loadData(folder, ax, subimgPxSize,
                                               technique, mag)
             plt.show(block=False)
 
@@ -178,7 +178,11 @@ def buildData(technique=None, pxSize=None, mag=None):
             nNoRings += lNR
 
             plt.close()
-            keepWorking = input('Keep working? [y/n] ') == 'y'
+            ans = ''
+            while ans not in ['y', 'n']:
+                ans = input('Keep working? [y/n] ')
+
+            keepWorking = ans == 'y'
 
         except OSError:
             print('No file selected!')
