@@ -23,7 +23,7 @@ class GollumDeveloper(QtGui.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.testData = True
+        self.testData = False
 
         self.setWindowTitle('Gollum Developer')
 

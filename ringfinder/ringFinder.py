@@ -34,7 +34,7 @@ class Gollum(QtGui.QMainWindow):
         super().__init__(*args, **kwargs)
 
         self.i = 0
-        self.testData = True
+        self.testData = False
 
         self.setWindowTitle('Gollum: the Ring Finder')
 
@@ -130,7 +130,7 @@ class Gollum(QtGui.QMainWindow):
         self.corrSlider.setValue(200)
         self.corrThresEdit = QtGui.QLineEdit('0.2')
         self.corrSlider.valueChanged[int].connect(self.sliderChange)
-        self.showCorrMapCheck = QtGui.QCheckBox('Show correlation map', self)
+        self.showCorrMapCheck = QtGui.QCheckBox('Show coefficient map', self)
         self.thetaStepEdit = QtGui.QLineEdit()
         self.deltaThEdit = QtGui.QLineEdit()
         self.sinPowerEdit = QtGui.QLineEdit()
@@ -183,7 +183,7 @@ class Gollum(QtGui.QMainWindow):
 
         # layout of the three widgets
         self.mainLayout.addWidget(self.buttonWidget, 1, 0)
-        corrLabel = QtGui.QLabel('Correlation')
+        corrLabel = QtGui.QLabel('Pearson coefficient')
         corrLabel.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
         self.mainLayout.addWidget(corrLabel, 0, 1)
         self.mainLayout.addWidget(self.corrImgWidget, 1, 1, 2, 1)
@@ -243,7 +243,6 @@ class Gollum(QtGui.QMainWindow):
     def loadImage(self, pxSize, tt, crop=0, filename=None):
 
         try:
-
             if not(isinstance(filename, str)):
                 filetypes = ('Tiff file', '*.tif;*.tiff')
                 self.filename = utils.getFilename('Load ' + tt + ' image',
@@ -561,11 +560,11 @@ class Gollum(QtGui.QMainWindow):
             plt.bar(x, y, align='center', width=(x[1] - x[0]))
             plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), 'r--',
                      linewidth=2)
-            text = ('correlation threshold = {0:.2f} \n'
+            text = ('Pearson coefficient threshold = {0:.2f} \n'
                     'n = {1}; nrings = {2} \n'
                     'ringFrac = {3:.2f} $\pm$ {4:.2f} \n'
-                    'mean correlation = {5:.3f} $\pm$ {6:.3f}\n'
-                    'mean ring correlation = {7:.3f} $\pm$ {8:.3f}')
+                    'mean coefficient = {5:.3f} $\pm$ {6:.3f}\n'
+                    'mean ring coefficient = {7:.3f} $\pm$ {8:.3f}')
             text = text.format(self.corrThres, n, nring,
                                np.mean(ringFracs), fracStd,
                                np.mean(meanCorrs), corrStd,
@@ -573,7 +572,7 @@ class Gollum(QtGui.QMainWindow):
             plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
                      bbox=dict(facecolor='white'))
-            plt.title("Correlations Histogram", fontsize=22)
+            plt.title("Pearson coefficient Histogram", fontsize=22)
             plt.tick_params(axis='both', labelsize=18)
             plt.grid()
             plt.tight_layout()
