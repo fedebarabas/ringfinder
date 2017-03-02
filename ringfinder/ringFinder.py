@@ -25,7 +25,21 @@ import ringfinder.tools as tools
 import ringfinder.pyqtsubclass as pyqtsub
 
 rc('text', usetex=True)
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 25})
+
+# These are the "Tableau 20" colors as RGB.
+tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),
+             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+             (227, 119, 194), (247, 182, 210), (127, 127, 127),
+             (199, 199, 199), (188, 189, 34), (219, 219, 141), (23, 190, 207),
+             (158, 218, 229)]
+
+# Scale the RGB values to the [0, 1] range, which is the format matplotlib
+# accepts.
+for i in range(len(tableau20)):
+    r, g, b = tableau20[i]
+    tableau20[i] = (r / 255., g / 255., b / 255.)
 
 
 class Gollum(QtGui.QMainWindow):
@@ -556,24 +570,26 @@ class Gollum(QtGui.QMainWindow):
             ringCorrStd = math.sqrt(statRingCorrVar + bioRingCorrVar)
 
             # Plotting
-            plt.figure(0)
-            plt.bar(x, y, align='center', width=(x[1] - x[0]))
-            plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), 'r--',
-                     linewidth=2)
+            plt.style.use('ggplot')
+            plt.figure(figsize=(10, 7.5))
+            plt.bar(x, y, align='center', width=(x[1] - x[0]), color="#3F5D7D")
+            plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), '--',
+                     color=tableau20[6], linewidth=2)
             text = ('Pearson coefficient threshold = {0:.2f} \n'
                     'n = {1}; nrings = {2} \n'
-                    'ringFrac = {3:.2f} $\pm$ {4:.2f} \n'
+                    'PSS fraction = {3:.2f} $\pm$ {4:.2f} \n'
                     'mean coefficient = {5:.3f} $\pm$ {6:.3f}\n'
                     'mean ring coefficient = {7:.3f} $\pm$ {8:.3f}')
             text = text.format(self.corrThres, n, nring,
                                np.mean(ringFracs), fracStd,
                                np.mean(meanCorrs), corrStd,
                                np.mean(meanRingCorrs), ringCorrStd)
-            plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
+            plt.text(0.75*plt.axis()[1], 0.83*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
-                     bbox=dict(facecolor='white'))
-            plt.title("Pearson coefficient Histogram", fontsize=22)
-            plt.tick_params(axis='both', labelsize=18)
+                     bbox=dict(facecolor='white'), fontsize=20)
+#            plt.title("Pearson coefficient Histogram", fontsize=22)
+            plt.xlabel('Pearson correlation coefficient', fontsize=35)
+            plt.tick_params(axis='both', labelsize=25)
             plt.grid()
             plt.tight_layout()
             plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'))
