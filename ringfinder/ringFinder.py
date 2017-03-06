@@ -129,6 +129,7 @@ class Gollum(QtGui.QMainWindow):
         self.corrSlider.setMaximum(250)   # Divide by 1000 to get corr value
         self.corrSlider.setValue(200)
         self.corrThresEdit = QtGui.QLineEdit('0.2')
+        self.areaThresEdit = QtGui.QLineEdit('20')
         self.corrSlider.valueChanged[int].connect(self.sliderChange)
         self.showCorrMapCheck = QtGui.QCheckBox('Show coefficient map', self)
         self.thetaStepEdit = QtGui.QLineEdit()
@@ -387,7 +388,8 @@ class Gollum(QtGui.QMainWindow):
                 # block. We apply intensity threshold to smoothed data so we
                 # don't catch tiny bright spots outside neurons
                 neuronFrac = 1 - np.sum(mask)/np.size(mask)
-                if np.any(blockS > thres[i]) and neuronFrac > 0.2:
+                areaThres = 0.01*float(self.areaThresEdit.text())
+                if np.any(blockS > thres[i]) and neuronFrac > areaThres:
                     output = tools.corrMethod(block, mask, *cArgs)
                     angle, corrTheta, corrMax, theta, phase = output
                     # Store results
@@ -560,7 +562,7 @@ class Gollum(QtGui.QMainWindow):
             plt.figure(figsize=(10, 7.5))
             plt.bar(x, y, align='center', width=(x[1] - x[0]), color="#3F5D7D")
             plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), '--',
-                     color=tableau20[6], linewidth=2)
+                     color='r', linewidth=2)
             text = ('Pearson coefficient threshold = {0:.2f} \n'
                     'n = {1}; nrings = {2} \n'
                     'PSS fraction = {3:.2f} $\pm$ {4:.2f} \n'
@@ -573,7 +575,6 @@ class Gollum(QtGui.QMainWindow):
             plt.text(0.75*plt.axis()[1], 0.83*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
                      bbox=dict(facecolor='white'), fontsize=20)
-#            plt.title("Pearson coefficient Histogram", fontsize=22)
             plt.xlabel('Pearson correlation coefficient', fontsize=35)
             plt.tick_params(axis='both', labelsize=25)
             plt.grid()
