@@ -18,14 +18,14 @@ from pyqtgraph.Qt import QtGui, QtCore
 
 import matplotlib.pyplot as plt
 import matplotlib.colors
-from matplotlib import rc
+# from matplotlib import rc
 
 import ringfinder.utils as utils
 import ringfinder.tools as tools
 import ringfinder.pyqtsubclass as pyqtsub
 
-rc('text', usetex=True)
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
+# rc('text', usetex=True)
+# rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
 
 
 class Gollum(QtGui.QMainWindow):
