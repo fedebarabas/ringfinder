@@ -128,8 +128,8 @@ class Gollum(QtGui.QMainWindow):
         self.corrSlider.setMinimum(0)
         self.corrSlider.setMaximum(250)   # Divide by 1000 to get corr value
         self.corrSlider.setValue(200)
-        self.corrThresEdit = QtGui.QLineEdit('0.2')
-        self.areaThresEdit = QtGui.QLineEdit('20')
+        self.corrThresEdit = QtGui.QLineEdit()
+        self.minAreaEdit = QtGui.QLineEdit()
         self.corrSlider.valueChanged[int].connect(self.sliderChange)
         self.showCorrMapCheck = QtGui.QCheckBox('Show coefficient map', self)
         self.thetaStepEdit = QtGui.QLineEdit()
@@ -388,7 +388,7 @@ class Gollum(QtGui.QMainWindow):
                 # block. We apply intensity threshold to smoothed data so we
                 # don't catch tiny bright spots outside neurons
                 neuronFrac = 1 - np.sum(mask)/np.size(mask)
-                areaThres = 0.01*float(self.areaThresEdit.text())
+                areaThres = 0.01*float(self.minAreaEdit.text())
                 if np.any(blockS > thres[i]) and neuronFrac > areaThres:
                     output = tools.corrMethod(block, mask, *cArgs)
                     angle, corrTheta, corrMax, theta, phase = output

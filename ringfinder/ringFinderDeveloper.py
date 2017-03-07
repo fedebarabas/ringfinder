@@ -62,7 +62,7 @@ class GollumDeveloper(QtGui.QMainWindow):
         intThrLabel = QtGui.QLabel('#sigmas threshold from mean')
         self.intThresEdit = QtGui.QLineEdit()
         self.minAreaLabel = QtGui.QLabel('Minimum filled area [%]')
-        self.minAreaEdit = QtGui.QLineEdit('20')
+        self.minAreaEdit = QtGui.QLineEdit()
         text = 'Intensity and neuron content discrimination'
         self.intThrButton = QtGui.QPushButton(text)
         self.intThrButton.setCheckable(True)
@@ -79,7 +79,7 @@ class GollumDeveloper(QtGui.QMainWindow):
         self.deltaThLabel = QtGui.QLabel('Delta Angle [°]')
         self.deltaThEdit = QtGui.QLineEdit()
         corrThresLabel = QtGui.QLabel('Discrimination threshold')
-        self.corrThresEdit = QtGui.QLineEdit('0.2')
+        self.corrThresEdit = QtGui.QLineEdit()
 
         advButton = QtGui.QPushButton('Advanced')
         advButton.setCheckable(True)
@@ -547,7 +547,8 @@ class ImageWidget(pg.GraphicsLayoutWidget):
                                  for i in np.arange(len(self.blocksInputS))])
 
             # Find sufficintly filled subimages
-            neuronFrac = np.array([1 - np.sum(m)/np.size(m) > 0.2
+            minArea = 0.01*float(self.main.minAreaEdit.text())
+            neuronFrac = np.array([1 - np.sum(m)/np.size(m) > minArea
                                    for m in self.blocksMask])
 
             neuron = neuronTh * neuronFrac
