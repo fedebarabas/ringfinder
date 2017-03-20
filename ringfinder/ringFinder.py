@@ -579,7 +579,10 @@ class Gollum(QtGui.QMainWindow):
             plt.tick_params(axis='both', labelsize=25)
             plt.grid()
             plt.tight_layout()
-            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'))
+            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.pdf'),
+                        dpi=300)
+            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'),
+                        dpi=300)
             plt.close()
 
             folder = os.path.split(path)[1]
