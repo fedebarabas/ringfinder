@@ -434,6 +434,9 @@ class Gollum(QtGui.QMainWindow):
             mx = np.max(maskedData)
             mn = np.min(maskedData)
             mp = (self.corrThres - mn)/(mx - mn)
+            mp = np.min((mp, 1))
+            mp = np.max((mp, 0))
+
             cmap = shiftedColorMap(matplotlib.cm.PuOr, midpoint=mp,
                                    name='shifted')
             heatmap = plt.pcolor(maskedData, cmap=cmap)
@@ -625,34 +628,50 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
     http://stackoverflow.com/questions/7404116/
     defining-the-midpoint-of-a-colormap-in-matplotlib
     '''
-    cdict = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'alpha': []
-    }
 
-    # regular index to compute the colors
-    reg_index = np.linspace(start, stop, 257)
+    if midpoint == stop:
+        newcmap = truncate_colormap(cmap, 0, 0.5)
 
-    # shifted index to match the data
-    shift_index = np.hstack([
-        np.linspace(0.0, midpoint, 128, endpoint=False),
-        np.linspace(midpoint, 1.0, 129, endpoint=True)
-    ])
+    elif midpoint == start:
+        newcmap = truncate_colormap(cmap, 0.5, 1)
 
-    for ri, si in zip(reg_index, shift_index):
-        r, g, b, a = cmap(ri)
+    else:
+        cdict = {
+            'red': [],
+            'green': [],
+            'blue': [],
+            'alpha': []
+        }
 
-        cdict['red'].append((si, r, r))
-        cdict['green'].append((si, g, g))
-        cdict['blue'].append((si, b, b))
-        cdict['alpha'].append((si, a, a))
+        # regular index to compute the colors
+        reg_index = np.linspace(start, stop, 257)
 
-    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+        # shifted index to match the data
+        shift_index = np.hstack([
+            np.linspace(0.0, midpoint, 128, endpoint=False),
+            np.linspace(midpoint, 1.0, 129, endpoint=True)
+        ])
+
+        for ri, si in zip(reg_index, shift_index):
+            r, g, b, a = cmap(ri)
+
+            cdict['red'].append((si, r, r))
+            cdict['green'].append((si, g, g))
+            cdict['blue'].append((si, b, b))
+            cdict['alpha'].append((si, a, a))
+
+        newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+
     plt.register_cmap(cmap=newcmap)
 
     return newcmap
+
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=256):
+    new_cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])
