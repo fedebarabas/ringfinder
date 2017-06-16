@@ -41,7 +41,7 @@ def saveConfig(main, filename=None):
         'Sinusoidal pattern power': main.sinPowerEdit.text(),
         'Angular step deg': main.thetaStepEdit.text(),
         'Delta angle deg': main.deltaThEdit.text(),
-        'Discrimination threshold': main.corrThresEdit.text()}
+        'Discrimination threshold': main.corrThresEdit.text()
         'Area threshold %': main.minAreaEdit.text()}
 
     with open(filename, 'w') as configfile:
@@ -224,7 +224,6 @@ def getDirection(data, binary, minLen, debug=False):
         if debug:
             print('No lines were found')
         return None, lines
-
 
 def linesFromBinary(binaryData, minLen, debug=False):
 
