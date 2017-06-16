@@ -8,6 +8,76 @@ Created on Sat Feb 11 18:51:26 2017
 import numpy as np
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
+from pyqtgraph.parametertree import Parameter, ParameterTree
+
+
+class DevTree(ParameterTree):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Parameter tree for the camera configuration
+        params = [{'name': 'Load image', 'type': 'group', 'children': [
+                      {'name': 'STORM', 'type': 'group', 'children': [
+                          {'name': 'Pixel size', 'type': 'float',
+                           'value': 13.3e-9,  'siPrefix': True, 'suffix': 'm'},
+                          {'name': 'Magnification', 'type': 'float',
+                           'value': 10},
+                          {'name': 'Load', 'type': 'action'}]},
+                      {'name': 'STED', 'type': 'group', 'children': [
+                          {'name': 'Pixel size', 'type': 'float',
+                           'value': 20e-9,  'siPrefix': True, 'suffix': 'm'},
+                          {'name': 'Load', 'type': 'action'}]}]},
+                  {'name': 'Settings', 'type': 'group', 'children': [
+                      {'name': 'ROI size', 'type': 'float', 'value': 1000e-9,
+                       'siPrefix': True, 'suffix': 'm'},
+                      {'name': 'Gaussian filter sigma', 'type': 'float',
+                       'value': 100e-9,  'siPrefix': True, 'suffix': 'm'},
+                      {'name': '#sigmas threshold', 'type': 'float',
+                       'value': 0.5},
+                      {'name': 'Neuron content discrimination',
+                       'type': 'action'},
+                      {'name': 'Filter image', 'type': 'action'},
+                      {'name': 'Lines minimum length', 'type': 'float',
+                       'value': 300e-9,  'siPrefix': True, 'suffix': 'm'},
+                      {'name': 'Get direction', 'type': 'action'},
+                      {'name': 'Ring periodicity', 'type': 'float',
+                       'value': 180e-9,  'siPrefix': True, 'suffix': 'm'},
+                      {'name': 'Sinusoidal pattern power', 'type': 'int',
+                       'value': 6},
+                      {'name': 'Angular step', 'type': 'float', 'value': 3,
+                       'suffix': 'º'},
+                      {'name': 'Angular range', 'type': 'float', 'value': 20,
+                       'suffix': 'º'},
+                      {'name': 'Pearson coefficient threshold',
+                       'type': 'float', 'value': 0.2},
+                      {'name': 'Advanced', 'type': 'action'},
+                      {'name': 'Run analysis', 'type': 'action'}
+                      ]}]
+
+        self.p = Parameter.create(name='params', type='group', children=params)
+        self.setParameters(self.p, showTop=False)
+
+        self.advanced = True
+        self.toggleAdvanced()
+        advParam = self.p.param('Settings').param('Advanced')
+        advParam.sigActivated.connect(self.toggleAdvanced)
+
+    def toggleAdvanced(self):
+
+        if self.advanced:
+            self.p.param('Settings').param('Lines minimum length').hide()
+            self.p.param('Settings').param('Sinusoidal pattern power').hide()
+            self.p.param('Settings').param('Angular step').hide()
+            self.p.param('Settings').param('Angular range').hide()
+            self.advanced = False
+        else:
+            self.p.param('Settings').param('Lines minimum length').show()
+            self.p.param('Settings').param('Sinusoidal pattern power').show()
+            self.p.param('Settings').param('Angular step').show()
+            self.p.param('Settings').param('Angular range').show()
+            self.advanced = True
+
 
 class Grid:
 

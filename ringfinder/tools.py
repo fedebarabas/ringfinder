@@ -62,7 +62,7 @@ def saveDefaultConfig(filename=None):
         'nsigmas threshold': '0.5', 'Lines min length nm': '300',
         'Ring periodicity nm': '180', 'Sinusoidal pattern power': '6',
         'Angular step deg': '3', 'Delta angle deg': '20',
-        'Discrimination threshold': '0.12'}
+        'Discrimination threshold': '0.2', 'Area threshold %': '20'}
 
     with open(filename, 'w') as configfile:
         config.write(configfile)
@@ -91,6 +91,7 @@ def loadConfig(main, filename=None):
     main.thetaStepEdit.setText(analysisConfig['Angular step deg'])
     main.deltaThEdit.setText(analysisConfig['Delta angle deg'])
     main.corrThresEdit.setText(analysisConfig['Discrimination threshold'])
+    main.minAreaEdit.setText(analysisConfig['Area threshold %'])
 
 
 def pearson(a, b):

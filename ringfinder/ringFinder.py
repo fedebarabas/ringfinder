@@ -18,14 +18,14 @@ from pyqtgraph.Qt import QtGui, QtCore
 
 import matplotlib.pyplot as plt
 import matplotlib.colors
-from matplotlib import rc
+# from matplotlib import rc
 
 import ringfinder.utils as utils
 import ringfinder.tools as tools
 import ringfinder.pyqtsubclass as pyqtsub
 
-rc('text', usetex=True)
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
+# rc('text', usetex=True)
+# rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 15})
 
 
 class Gollum(QtGui.QMainWindow):
@@ -128,7 +128,8 @@ class Gollum(QtGui.QMainWindow):
         self.corrSlider.setMinimum(0)
         self.corrSlider.setMaximum(250)   # Divide by 1000 to get corr value
         self.corrSlider.setValue(200)
-        self.corrThresEdit = QtGui.QLineEdit('0.2')
+        self.corrThresEdit = QtGui.QLineEdit()
+        self.minAreaEdit = QtGui.QLineEdit()
         self.corrSlider.valueChanged[int].connect(self.sliderChange)
         self.showCorrMapCheck = QtGui.QCheckBox('Show coefficient map', self)
         self.thetaStepEdit = QtGui.QLineEdit()
@@ -387,7 +388,8 @@ class Gollum(QtGui.QMainWindow):
                 # block. We apply intensity threshold to smoothed data so we
                 # don't catch tiny bright spots outside neurons
                 neuronFrac = 1 - np.sum(mask)/np.size(mask)
-                if np.any(blockS > thres[i]) and neuronFrac > 0.2:
+                areaThres = 0.01*float(self.minAreaEdit.text())
+                if np.any(blockS > thres[i]) and neuronFrac > areaThres:
                     output = tools.corrMethod(block, mask, *cArgs)
                     angle, corrTheta, corrMax, theta, phase = output
                     # Store results
@@ -432,6 +434,9 @@ class Gollum(QtGui.QMainWindow):
             mx = np.max(maskedData)
             mn = np.min(maskedData)
             mp = (self.corrThres - mn)/(mx - mn)
+            mp = np.min((mp, 1))
+            mp = np.max((mp, 0))
+
             cmap = shiftedColorMap(matplotlib.cm.PuOr, midpoint=mp,
                                    name='shifted')
             heatmap = plt.pcolor(maskedData, cmap=cmap)
@@ -556,27 +561,31 @@ class Gollum(QtGui.QMainWindow):
             ringCorrStd = math.sqrt(statRingCorrVar + bioRingCorrVar)
 
             # Plotting
-            plt.figure(0)
-            plt.bar(x, y, align='center', width=(x[1] - x[0]))
-            plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), 'r--',
-                     linewidth=2)
+            plt.style.use('ggplot')
+            plt.figure(figsize=(10, 7.5))
+            plt.bar(x, y, align='center', width=(x[1] - x[0]), color="#3F5D7D")
+            plt.plot((self.corrThres, self.corrThres), (0, np.max(y)), '--',
+                     color='r', linewidth=2)
             text = ('Pearson coefficient threshold = {0:.2f} \n'
                     'n = {1}; nrings = {2} \n'
-                    'ringFrac = {3:.2f} $\pm$ {4:.2f} \n'
+                    'PSS fraction = {3:.2f} $\pm$ {4:.2f} \n'
                     'mean coefficient = {5:.3f} $\pm$ {6:.3f}\n'
                     'mean ring coefficient = {7:.3f} $\pm$ {8:.3f}')
             text = text.format(self.corrThres, n, nring,
                                np.mean(ringFracs), fracStd,
                                np.mean(meanCorrs), corrStd,
                                np.mean(meanRingCorrs), ringCorrStd)
-            plt.text(0.8*plt.axis()[1], 0.8*plt.axis()[3], text,
+            plt.text(0.75*plt.axis()[1], 0.83*plt.axis()[3], text,
                      horizontalalignment='center', verticalalignment='center',
-                     bbox=dict(facecolor='white'))
-            plt.title("Pearson coefficient Histogram", fontsize=22)
-            plt.tick_params(axis='both', labelsize=18)
+                     bbox=dict(facecolor='white'), fontsize=20)
+            plt.xlabel('Pearson correlation coefficient', fontsize=35)
+            plt.tick_params(axis='both', labelsize=25)
             plt.grid()
             plt.tight_layout()
-            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'))
+            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.pdf'),
+                        dpi=300)
+            plt.savefig(os.path.join(resultsDir, folder + 'corr_hist.png'),
+                        dpi=300)
             plt.close()
 
             folder = os.path.split(path)[1]
@@ -619,34 +628,50 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
     http://stackoverflow.com/questions/7404116/
     defining-the-midpoint-of-a-colormap-in-matplotlib
     '''
-    cdict = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'alpha': []
-    }
 
-    # regular index to compute the colors
-    reg_index = np.linspace(start, stop, 257)
+    if midpoint == stop:
+        newcmap = truncate_colormap(cmap, 0, 0.5)
 
-    # shifted index to match the data
-    shift_index = np.hstack([
-        np.linspace(0.0, midpoint, 128, endpoint=False),
-        np.linspace(midpoint, 1.0, 129, endpoint=True)
-    ])
+    elif midpoint == start:
+        newcmap = truncate_colormap(cmap, 0.5, 1)
 
-    for ri, si in zip(reg_index, shift_index):
-        r, g, b, a = cmap(ri)
+    else:
+        cdict = {
+            'red': [],
+            'green': [],
+            'blue': [],
+            'alpha': []
+        }
 
-        cdict['red'].append((si, r, r))
-        cdict['green'].append((si, g, g))
-        cdict['blue'].append((si, b, b))
-        cdict['alpha'].append((si, a, a))
+        # regular index to compute the colors
+        reg_index = np.linspace(start, stop, 257)
 
-    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+        # shifted index to match the data
+        shift_index = np.hstack([
+            np.linspace(0.0, midpoint, 128, endpoint=False),
+            np.linspace(midpoint, 1.0, 129, endpoint=True)
+        ])
+
+        for ri, si in zip(reg_index, shift_index):
+            r, g, b, a = cmap(ri)
+
+            cdict['red'].append((si, r, r))
+            cdict['green'].append((si, g, g))
+            cdict['blue'].append((si, b, b))
+            cdict['alpha'].append((si, a, a))
+
+        newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+
     plt.register_cmap(cmap=newcmap)
 
     return newcmap
+
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=256):
+    new_cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])
