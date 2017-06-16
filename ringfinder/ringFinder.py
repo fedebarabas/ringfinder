@@ -515,7 +515,7 @@ class Gollum(QtGui.QMainWindow):
             # plot histogram of the correlation values
             hrange = (np.min(np.nan_to_num(corrArray)),
                       np.max(np.nan_to_num(corrArray)))
-            y, x, _ = plt.hist(corrArray.flatten(), bins=60, range=hrange)
+            y, x, _ = plt.hist(corrArray.flatten(), bins=20, range=hrange)
             x = (x[1:] + x[:-1])/2
 
             # Save data array as txt
@@ -547,18 +547,15 @@ class Gollum(QtGui.QMainWindow):
             validRingCorr = validCorr[validCorr > self.corrThres]
             ringFrac = nring/n
 
-            # Error estimation: sum of statistic and "biological" err sources
+            # Err estimation: stat err (binomial distribution, p=ringFrac)
             statVar = ringFrac*(1 - ringFrac)/n
-            bioVar = np.var(ringFracs)/nfiles
-            fracStd = math.sqrt(statVar + bioVar)
+            fracStd = math.sqrt(statVar)
 
-            bioCorrVar = np.var(meanCorrs)/nfiles
             statCorrVar = np.var(validCorr)/n
-            corrStd = math.sqrt(statCorrVar + bioCorrVar)
+            corrStd = math.sqrt(statCorrVar)
 
-            bioRingCorrVar = np.var(meanRingCorrs)/len(meanRingCorrs)
             statRingCorrVar = np.var(validRingCorr)/nring
-            ringCorrStd = math.sqrt(statRingCorrVar + bioRingCorrVar)
+            ringCorrStd = math.sqrt(statRingCorrVar)
 
             # Plotting
             plt.style.use('ggplot')

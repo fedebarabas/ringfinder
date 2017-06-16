@@ -66,14 +66,11 @@ class simAxon(sin2D):
             # sin2D.sin2d squared in order to always get positive values
             self.grating2 = sin2D(self.imSize, 2*self.wvlen, 90 - self.theta,
                                   self.phase).sin2d**b
-            self.mask = sin2D(self.imSize, 2*self.imSize, -self.theta + 90,
-                              phase).sin2d**a
+
         else:
             # sin2D.sin2d squared in order to always get positive values
             self.grating2 = sin2D(self.imSize, self.wvlen, 90 - self.theta,
                                   self.phase).sin2d**b
-            self.mask = sin2D(self.imSize, 2*self.imSize, -self.theta + 90,
-                              phase).sin2d**a
 
         # Make simulated axon data
-        self.data = self.grating2*(self.mask)
+        self.data = self.grating2

@@ -42,6 +42,7 @@ def saveConfig(main, filename=None):
         'Angular step deg': main.thetaStepEdit.text(),
         'Delta angle deg': main.deltaThEdit.text(),
         'Discrimination threshold': main.corrThresEdit.text()}
+        'Area threshold %': main.minAreaEdit.text()}
 
     with open(filename, 'w') as configfile:
         config.write(configfile)
@@ -220,7 +221,8 @@ def getDirection(data, binary, minLen, debug=False):
 
     except:
         # if sigmaTh is None (no lines), this happens
-        print('No lines were found')
+        if debug:
+            print('No lines were found')
         return None, lines
 
 
@@ -265,6 +267,32 @@ def linesFromBinary(binaryData, minLen, debug=False):
         # We like angles in [0, 180)
         if mean < 0:
             mean += 180
+            
+        # histogram method for getDirection
+ 
+        hrange = (-180, 180)
+        arr = np.histogram(angleArr, bins=45, range=hrange)
+ 
+        dig = (arr[0] != 0).astype(int)
+        angleGroups = [np.split(arr[0], np.where(np.diff(dig) != 0)[0] + 1),
+                       np.split(arr[1], np.where(np.diff(dig) != 0)[0] + 1)]
+        angleGroupsSum = [np.sum(np.array(b)) for b in angleGroups[0]]
+        biggerAngleGroup = angleGroups[1][np.argmax(angleGroupsSum)]
+ 
+        if debug: 
+            print('Total number of lines: {}, Number of lines in biggest group: {}'.format(np.sum(angleGroupsSum), np.max(angleGroupsSum)))
+ 
+        if np.max(angleGroupsSum)/np.sum(angleGroupsSum) > 0.49:
+            mean = np.mean(biggerAngleGroup)
+            std = np.std(biggerAngleGroup)
+ 
+            # We like angles in [0, 180)
+            if mean < 0:
+                mean += 180
+ 
+        else:
+            mean = None
+            std = None
 
         return mean, std, lines
 
