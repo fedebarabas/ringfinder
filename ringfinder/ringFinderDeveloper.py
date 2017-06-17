@@ -110,9 +110,9 @@ class GollumDeveloper(QtGui.QMainWindow):
         settingsLayout.addWidget(self.minAreaEdit, 4, 1)
         settingsLayout.addWidget(self.intThrButton, 5, 0, 1, 2)
         settingsLayout.addWidget(filterImageButton, 6, 0, 1, 2)
-        settingsLayout.addWidget(self.lineLengthLabel, 7, 0)
-        settingsLayout.addWidget(self.lineLengthEdit, 7, 1)
-        settingsLayout.addWidget(dirButton, 8, 0, 1, 2)
+        settingsLayout.addWidget(dirButton, 7, 0, 1, 2)
+        settingsLayout.addWidget(self.lineLengthLabel, 8, 0)
+        settingsLayout.addWidget(self.lineLengthEdit, 8, 1)
         settingsLayout.addWidget(QtGui.QLabel('Ring periodicity [nm]'), 9, 0)
         settingsLayout.addWidget(self.wvlenEdit, 9, 1)
         settingsLayout.addWidget(self.sinPowerLabel, 10, 0)
@@ -160,7 +160,7 @@ class GollumDeveloper(QtGui.QMainWindow):
         self.imageWidget = ImageWidget(self)
         layout.addWidget(self.imageWidget, 0, 1)
         layout.setColumnMinimumWidth(1, 1060)
-        layout.setRowMinimumHeight(0, 900)
+        layout.setRowMinimumHeight(0, 820)
 
         self.roiSizeEdit.textChanged.connect(self.imageWidget.updateROI)
         self.sigmaEdit.textChanged.connect(self.imageWidget.updateMasks)
@@ -274,7 +274,7 @@ class ImageWidget(pg.GraphicsLayoutWidget):
             self.loadSTED(os.path.join(os.getcwd(), 'spectrinSTED.tif'))
 
         # Correlation
-        self.pCorr = pg.PlotItem(labels={'left': ('Degree of periodicity'),
+        self.pCorr = pg.PlotItem(labels={'left': ('Pearson coefficient'),
                                          'bottom': ('Angle', 'deg')})
         self.pCorr.showGrid(x=True, y=True)
         self.addItem(self.pCorr, row=0, col=2)

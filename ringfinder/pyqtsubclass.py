@@ -114,6 +114,7 @@ class SubImgROI(pg.ROI):
 
     def __init__(self, step, *args, **kwargs):
         super().__init__([0, 0], [0, 0], translateSnap=True, scaleSnap=True,
+                         pen=pg.mkPen(color='y', width=1, antialias=True),
                          *args, **kwargs)
         self.step = step
         self.keyPos = (0, 0)
