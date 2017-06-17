@@ -41,7 +41,8 @@ def saveConfig(main, filename=None):
         'Sinusoidal pattern power': main.sinPowerEdit.text(),
         'Angular step deg': main.thetaStepEdit.text(),
         'Delta angle deg': main.deltaThEdit.text(),
-        'Discrimination threshold': main.corrThresEdit.text()}
+        'Discrimination threshold': main.corrThresEdit.text(),
+        'Area threshold %': main.minAreaEdit.text()}
 
     with open(filename, 'w') as configfile:
         config.write(configfile)
@@ -220,9 +221,9 @@ def getDirection(data, binary, minLen, debug=False):
 
     except:
         # if sigmaTh is None (no lines), this happens
-        print('No lines were found')
+        if debug:
+            print('No lines were found')
         return None, lines
-
 
 def linesFromBinary(binaryData, minLen, debug=False):
 
@@ -265,6 +266,32 @@ def linesFromBinary(binaryData, minLen, debug=False):
         # We like angles in [0, 180)
         if mean < 0:
             mean += 180
+            
+        # histogram method for getDirection
+ 
+        hrange = (-180, 180)
+        arr = np.histogram(angleArr, bins=45, range=hrange)
+ 
+        dig = (arr[0] != 0).astype(int)
+        angleGroups = [np.split(arr[0], np.where(np.diff(dig) != 0)[0] + 1),
+                       np.split(arr[1], np.where(np.diff(dig) != 0)[0] + 1)]
+        angleGroupsSum = [np.sum(np.array(b)) for b in angleGroups[0]]
+        biggerAngleGroup = angleGroups[1][np.argmax(angleGroupsSum)]
+ 
+        if debug: 
+            print('Total number of lines: {}, Number of lines in biggest group: {}'.format(np.sum(angleGroupsSum), np.max(angleGroupsSum)))
+ 
+        if np.max(angleGroupsSum)/np.sum(angleGroupsSum) > 0.49:
+            mean = np.mean(biggerAngleGroup)
+            std = np.std(biggerAngleGroup)
+ 
+            # We like angles in [0, 180)
+            if mean < 0:
+                mean += 180
+ 
+        else:
+            mean = None
+            std = None
 
         return mean, std, lines
 
@@ -512,13 +539,3 @@ def pointsMethod(self, data, thres=.3):
         rings = len(D) > 0
 
     return points, D, rings
-
-def plotResults():
-    data = np.loadtxt(r'/home/federico/Desktop/Gollum/STORM/results.txt')
-    data_sted = np.loadtxt(r'/home/federico/Desktop/Gollum/STED/results.txt')
-    plt.bar(np.arange(len(data[2])), data[0], yerr=data[1], align='edge', tick_label=data[2].astype(int), error_kw=dict(ecolor='black', lw=2, capsize=5, capthick=2), width=-0.4,label='STORM r=0.2')
-    plt.bar(np.arange(len(data_sted[2])), data_sted[0], yerr=data_sted[1], align='edge', color='red', tick_label=data_sted[2].astype(int), error_kw=dict(ecolor='black', lw=2, capsize=5, capthick=2), width=0.4,label='STED r=0.16')
-    plt.legend(loc=2)
-    plt.xlabel('DIV')
-    plt.ylabel('Ring fraction')
-
