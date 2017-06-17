@@ -52,7 +52,7 @@ ringFinderDeveloper is used for fine tuning of the analysis parameters so that t
 
        $ python -m bin.ringFinderDeveloper
 
-   .. image:: https://github.com/fedebarabas/tormenta/blob/master/screenshots/developer1.png
+   .. image:: /raw/master/screenshots/developer1.png
 
    It is structured in two sections: input on the left and output on the right. 
 
@@ -66,7 +66,7 @@ ringFinderDeveloper is used for fine tuning of the analysis parameters so that t
 
 6. Push **Run analysis** button. The software will compare the subregion to a reference pattern for different angles and phases and it will show the output in the two right panels of the output section. 
 
-   .. image:: https://github.com/fedebarabas/tormenta/blob/master/screenshots/developer2.png
+   .. image:: /raw/master/screenshots/developer2.png
 
    The graph at the top plots the *Pearson coefficient* vs the angle of the reference pattern. The blue-shaded region points the angle range within where the maximum Pearson coefficient will be found. It is centered in the previously estimated direction angle. Below the plot, the pattern with the angle and phase that maximize the Pearson coefficient is shown on top of the data. They should match.
 
@@ -83,17 +83,17 @@ ringFinder
 
        $ python -m bin.ringFinder
        
-   .. image:: https://github.com/fedebarabas/tormenta/blob/master/screenshots/finder1.png
-
+   .. image:: /raw/master/screenshots/finder1.png
+   
 2. Load one of the images and press **Run Analysis**. 
 
 3. Choose a threshold value by moving the **Discrimination threshold** slider until the software successfully discriminates subregions exhibiting the given structure from those that do not. For the actin/spectrin structure, we used 0.2 for STORM images and 0.17 for STED images. The highlighted regions indicate a Pearson value above the threshold. 
 
-   .. image:: https://github.com/fedebarabas/tormenta/blob/master/screenshots/finder2.png
+   .. image:: /raw/master/screenshots/finder2.png
 
 4. Use the chosen value to automatically analyze an unlimited number of images taken from the sample under identical conditions. Do this from the **Run** section of the program bar. The analysis of a folder of 15 images takes ~ 120 s running on a computer with an Intel i5-4440 CPU @ 3.10GHz processor. The output of the program is located in a dedicated subfolder named **results** and includes an histogram of all Pearson values of the subregions of all analyzed images. 
 
-   .. image:: https://github.com/fedebarabas/tormenta/blob/master/screenshots/histogram.png
+   .. image:: /raw/master/screenshots/histogram.png
 
    The information in the textbox characterizes the set of analyzed images. In particular, **ringFrac** is the fraction of subimages exhibiting the specified structure. Also, for every single analyzed image, a binary one indicating the presence of the structure and an image in which the Pearson coefficient is encoded in each pixel's intensity are provided. They can be superimposed with the original data using ImageJ software.
 
