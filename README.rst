@@ -21,19 +21,21 @@ Run in terminal:
 Windows
 ^^^^^^^
 
+These instructions apply to 64bit system architecture. If your operation system is 32bits, change the downloads versions accordingly.
+
 -  Install `WinPython
-   3.4 <https://sourceforge.net/projects/winpython/files/>`__.
+   3.5 <https://sourceforge.net/projects/winpython/files/>`__.
 -  Browse to `Laboratory for Fluorescence
    Dynamics <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ and download
-   tifffile for Python 3.4 to
-   ``$PATH\WinPython-64bit-3.4.4.1\python-3.4.4.amd64\``.
+   the *tifffile* package for Python 3.5 and 64bits architecture to
+   (*WinPythonPATH*)``\python-3.4.4.amd64\``.
 -  Open WinPython Command Prompt and run:
 
    ::
 
-       $ pip install tifffile-2016.4.19-cp34-cp34m-win_amd64.whl
+       $ pip install tifffile-*.whl
 
--  Clone `Tormenta repo <https://github.com/fedebarabas/ringfinder>`__.
+-  Clone `ringfinder repository <https://github.com/fedebarabas/ringfinder>`__.
 
 
 Usage
