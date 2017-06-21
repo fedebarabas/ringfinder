@@ -46,7 +46,7 @@ The code includes two executable programs: ringFinder and ringFinderDeveloper. T
 ringFinderDeveloper 
 ^^^^^^^^^^^^^^^^^^^
 
-ringFinderDeveloper is used for fine tuning of the analysis parameters so that the image structure is correctly characterized. These parameters are chosen from its performance on individual subregions of a testing image.
+ringFinderDeveloper is used for fine tuning of the analysis parameters so that the image structure is correctly identified. These parameters are chosen from its performance on individual subregions of a testing image.
 
 1. Open the program:
 
@@ -93,7 +93,7 @@ ringFinder
 
    .. image:: screenshots/finder2.png
 
-4. Use the chosen value to automatically analyze an unlimited number of images taken from the sample under identical conditions. Do this from the **Run** section of the program top bar. The analysis of a folder of 15 images takes ~ 120 s running on a computer with an Intel i5-4440 CPU. The output of the program is located in a dedicated subfolder named **results** and includes an histogram of all Pearson values of the subregions of all analyzed images. 
+4. Use the chosen value to automatically analyze an unlimited number of images taken from the sample under identical conditions. Do this from the **Run** section of the program top bar. The analysis of 15 images takes ~ 120 s running on a computer with an Intel i5-4440 CPU. The output of the program is located in a dedicated subfolder named **results** and includes an histogram of all Pearson values of the subregions of all analyzed images. 
 
    .. image:: screenshots/histogram.png
 
