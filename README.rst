@@ -21,19 +21,21 @@ Run in terminal:
 Windows
 ^^^^^^^
 
+These instructions apply to 64bit system architecture. If your operation system is 32bits, change the downloads versions accordingly.
+
 -  Install `WinPython
-   3.4 <https://sourceforge.net/projects/winpython/files/>`__.
+   3.5 <https://sourceforge.net/projects/winpython/files/>`__.
 -  Browse to `Laboratory for Fluorescence
    Dynamics <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ and download
-   tifffile for Python 3.4 to
-   ``$PATH\WinPython-64bit-3.4.4.1\python-3.4.4.amd64\``.
+   the *tifffile* package for Python 3.5 and 64bits architecture to
+   (*WinPythonPATH*)``\python-3.4.4.amd64\``.
 -  Open WinPython Command Prompt and run:
 
    ::
 
-       $ pip install tifffile-2016.4.19-cp34-cp34m-win_amd64.whl
+       $ pip install tifffile-*.whl
 
--  Clone `Tormenta repo <https://github.com/fedebarabas/ringfinder>`__.
+-  Clone `ringfinder repository <https://github.com/fedebarabas/ringfinder>`__.
 
 If another Python version is preferred, adapt these instructions accordingly.
 
@@ -51,7 +53,7 @@ spectrinSTED.tif is automatically loaded when the program starts.
 ringFinderDeveloper 
 ^^^^^^^^^^^^^^^^^^^
 
-ringFinderDeveloper is used for fine tuning of the analysis parameters so that the image structure is correctly characterized. These parameters are chosen from its performance on individual subregions of a testing image.
+ringFinderDeveloper is used for fine tuning of the analysis parameters so that the image structure is correctly identified. These parameters are chosen from its performance on individual subregions of a testing image.
 
 1. Open the program:
 
@@ -74,7 +76,7 @@ ringFinderDeveloper is used for fine tuning of the analysis parameters so that t
     - STORM pixel [nm] = 13.3
     - STORM magnification = 10
 
-3. Choose a region of interest size (**ROI size**) appropiate to the structure that you want to detect within your images. *Gollum* was developed with the structure observed in the spectrin distribution in neurons of 190 nm periodicity, and therefore a 1000 nm ROI size was chosen.
+3. Choose a region of interest size (**ROI size**) appropriate to the structure that you want to detect within your images. This software was developed with the structure observed in the spectrin distribution in neurons of 190 nm periodicity, and therefore a 1000 nm ROI size was chosen.
 
   - ROI size [nm] = 1000
 
@@ -125,7 +127,7 @@ ringFinder
 
    .. image:: screenshots/finder2.png
 
-4. Use the chosen value to automatically analyze an unlimited number of images taken from the sample under identical conditions. Do this from the **Run** section of the program bar. The analysis of a folder of 15 images takes ~ 120 s running on a computer with an Intel i5-4440 CPU @ 3.10GHz processor. The output of the program is located in a dedicated subfolder named **results** and includes an histogram of all Pearson values of the subregions of all analyzed images. 
+4. Use the chosen value to automatically analyze an unlimited number of images taken from the sample under identical conditions. Do this from the **Run** section of the program top bar. The analysis of 15 images takes ~ 120 s running on a computer with an Intel i5-4440 CPU. The output of the program is located in a dedicated subfolder named **results** and includes an histogram of all Pearson values of the subregions of all analyzed images. 
 
    .. image:: screenshots/histogram.png
 
