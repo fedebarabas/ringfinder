@@ -35,11 +35,18 @@ Windows
 
 -  Clone `Tormenta repo <https://github.com/fedebarabas/ringfinder>`__.
 
+If another Python version is preferred, adapt these instructions accordingly.
+
 
 Usage
 ~~~~~
 
-The code includes two executable programs: ringFinder and ringFinderDeveloper. Their usage instructions are descibed below. 
+The code includes two executable programs: ringFinder and ringFinderDeveloper. Their usage instructions are described through the analysis of test images. These test images can be found in this repository at:
+
+- /ringfinder/spectrinSTED.tif
+- /ringfinder/spectrinSTORM.tif
+	
+spectrinSTED.tif is automatically loaded when the program starts.
 
 ringFinderDeveloper 
 ^^^^^^^^^^^^^^^^^^^
@@ -56,13 +63,30 @@ ringFinderDeveloper is used for fine tuning of the analysis parameters so that t
 
    It is structured in two sections: input on the left and output on the right. 
 
-2. Load one of the images. At the top of the input section, the **Load image** subsection allows to load either STORM or STED images provided its **Pixel size** and, for STORM, the final image **magnification** over the raw images. If your image was acquired through a different method, load it as a STED image with the appropiate pixel size. These instructions use the example STED image automatically loaded when the program starts.
+2. Load one of the images. At the top of the input section, the **Load image** subsection allows to load either STORM or STED images provided its **Pixel size** and, for STORM, the final image **magnification** over the raw images. If your image was acquired through a different method, load it as a STED image with the appropiate pixel size. These instructions use the example STED image automatically loaded when the program starts. These are the corresponding parameters for the included test images:
+
+  - spectrinSTED.tif:
+
+    - STED pixel [nm] = 20
+
+  - spectrinSTORM.tif: 
+
+    - STORM pixel [nm] = 13.3
+    - STORM magnification = 10
 
 3. Choose a region of interest size (**ROI size**) appropiate to the structure that you want to detect within your images. *Gollum* was developed with the structure observed in the spectrin distribution in neurons of 190 nm periodicity, and therefore a 1000 nm ROI size was chosen.
 
-4. Neuron discrimination. The discrimination of the biological structure is carried out by first blurring the image with a gaussian kernel of a sigma given by the value in the **Sigma of gaussian filter** field. Then, all pixels with an intensity above **#sigmas threshold from mean** sigmas from the mean intensity are considered part of the structure of interest. Therefore, **Sigma of gaussian filter** is a function of the size of the structure and **#sigmas threshold from mean**, of the images's SNR. A sigma of 100~nm and a discrimination intensity of half a standard deviation above the mean intensity works well for STORM and STED images of hippocampal neurons. Check if the chosen values work correctly by pushing the **Intensity and neuron content discrimination** button.
+  - ROI size [nm] = 1000
 
-5. Using the arrow keys, move the yellow subimage ROI to a region where the structure to be identified is clearly present. Choose suitable values for the **Ring periodicity** and (within the **Advanced** subsection), the **Direction lines min length**. The direction lines are detected at the edge between the structure and the background and are used to estimate the direction angle of the structure. For the actin/spectrin periodical structure in neurons, a periodicity of 180-190 and a minimum length of 300 works well. 
+4. Neuron discrimination. The discrimination of the biological structure is carried out by first blurring the image with a gaussian kernel of a sigma given by the value in the **Sigma of gaussian filter [nm]** field. Then, all pixels with an intensity above **#sigmas threshold from mean** sigmas from the mean intensity are considered part of the structure of interest. Therefore, **Sigma of gaussian filter** is a function of the size of the structure and **#sigmas threshold from mean**, of the images's SNR. A sigma of 100~nm and a discrimination intensity of half a standard deviation above the mean intensity works well for STORM and STED images of hippocampal neurons. Check if the chosen values work correctly by pushing the **Intensity and neuron content discrimination** button.
+
+  - Sigma of gaussian filter [nm] = 100
+  - #sigmas threshold from mean = 0.5
+
+5. Using the arrow keys, move the yellow subimage ROI to a region where the structure to be identified is clearly present. Choose suitable values for the **Ring periodicity** and the **Direction lines min length** (optional, located within the Advanced section). The direction lines are detected at the edge between the structure and the background and are used to estimate the direction angle of the structure. For the actin/spectrin periodical structure in neurons, a periodicity of 180-190 and a minimum length of 300 works well. 
+
+  - Ring periodicity [nm] = 180
+  - Direction lines min length [nm] = 300 (optional)
 
 6. Push **Run analysis** button. The software will compare the subregion to a reference pattern for different angles and phases and it will show the output in the two right panels of the output section. 
 
@@ -71,6 +95,11 @@ ringFinderDeveloper is used for fine tuning of the analysis parameters so that t
    The graph at the top plots the *Pearson coefficient* vs the angle of the reference pattern. The blue-shaded region points the angle range within where the maximum Pearson coefficient will be found. It is centered in the previously estimated direction angle. Below the plot, the pattern with the angle and phase that maximize the Pearson coefficient is shown on top of the data. They should match.
 
 7. Take note of the maximum Pearson value in this region and compare it with the one found in regions with biological structure but without the periodical arrangement that you need to identify. Then, choose a **Discrimination threshold** that allows you to discriminate these two distinct cases. This threshold will be further tuned within the ringFinder program.
+
+  - Discrimination threshold
+
+    - spectrinSTED.tif: 0.17
+    - spectrinSTED.tif: 0.20
 
 Once structures in your sample image are correctly discriminated, close ringFinderDeveloper. The chosen parameters are automatically saved to a config file.
 
@@ -88,6 +117,11 @@ ringFinder
 2. Load one of the images and press **Run Analysis**. 
 
 3. Choose a threshold value by moving the **Discrimination threshold** slider until the software successfully discriminates subregions exhibiting the given structure from those that do not. For the actin/spectrin structure, we used 0.2 for STORM images and 0.17 for STED images. The highlighted regions indicate a Pearson value above the threshold. 
+
+  - Discrimination threshold
+
+    - spectrinSTED.tif: 0.17
+    - spectrinSTED.tif: 0.20
 
    .. image:: screenshots/finder2.png
 
