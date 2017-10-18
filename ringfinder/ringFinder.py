@@ -179,8 +179,8 @@ class Gollum(QtGui.QMainWindow):
         buttonsLayout.addWidget(self.showCorrMapCheck, 9, 0, 1, 3)
         buttonsLayout.addWidget(self.corrButton, 10, 0, 1, 3)
         buttonsLayout.setRowMinimumHeight(4, 20)
-        buttonsLayout.setColumnMinimumWidth(0, 100)
-        self.buttonWidget.setFixedWidth(300)
+        buttonsLayout.setColumnMinimumWidth(0, 140)
+        self.buttonWidget.setFixedWidth(270)
 
         # layout of the three widgets
         self.mainLayout.addWidget(self.buttonWidget, 1, 0)
