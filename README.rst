@@ -140,6 +140,7 @@ How to cite
 If you used the code/program for your paper, please cite
 
 Barabas, Masullo, et al., *Automated quantification of protein periodic nanostructures in fluorescence nanoscopy images: abundance and regularity of neuronal spectrin membrane-associated skeleton*, Scientific Reports, 2017.
+
 `doi:10.1038/s41598-017-16280-x <https://www.nature.com/articles/s41598-017-16280-x>`__   
 
    
