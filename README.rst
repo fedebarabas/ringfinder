@@ -150,8 +150,5 @@ Contact
 Feel free to contact us with comments or suggestions. Use any part of
 the code that suits your needs.
 
-Federico Barabas
-   fede.barabas[AT]gmail.com
-
 Luciano Masullo
    lu.masullo[AT]gmail.com
